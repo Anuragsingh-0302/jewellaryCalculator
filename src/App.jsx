@@ -1,6 +1,6 @@
 // app.jsx
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Calculator, Gem, Percent, IndianRupee, Download } from "lucide-react";
 import jsPDF from "jspdf";
 
@@ -20,19 +20,23 @@ const formatWeight = (grams) => {
   ).padStart(3, "0")} g`;
 };
 
-// Variants for stagger animation
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.15 },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-};
+// Floating background icon animation
+const FloatingIcon = ({ x, y, delay }) => (
+  <motion.div
+    className="absolute text-yellow-400 opacity-30"
+    initial={{ y }}
+    animate={{ y: [y, y - 50, y], rotate: [0, 20, -20, 0] }}
+    transition={{
+      duration: 10,
+      repeat: Infinity,
+      delay,
+      ease: "easeInOut",
+    }}
+    style={{ left: x }}
+  >
+    <Gem size={40} />
+  </motion.div>
+);
 
 export default function JewelleryCalculator() {
   const [jewelleryType, setJewelleryType] = useState("Gold");
@@ -42,6 +46,7 @@ export default function JewelleryCalculator() {
   const [makingCharge, setMakingCharge] = useState("");
   const [gst, setGst] = useState("");
   const [result, setResult] = useState(null);
+  const [animatedPrice, setAnimatedPrice] = useState(0);
 
   const calculate = () => {
     const R = parseFloat(rate || 0);
@@ -70,6 +75,28 @@ export default function JewelleryCalculator() {
       FTJC,
     });
   };
+
+  // Animate price count-up
+  useEffect(() => {
+    if (!result) return;
+    let start = 0;
+    const end = result.FTJC;
+    const duration = 1000;
+    const step = 20;
+    let current = start;
+    const increment = (end - start) / (duration / step);
+
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= end) {
+        current = end;
+        clearInterval(timer);
+      }
+      setAnimatedPrice(current);
+    }, step);
+
+    return () => clearInterval(timer);
+  }, [result]);
 
   const exportPDF = () => {
     if (!result) return;
@@ -124,6 +151,11 @@ export default function JewelleryCalculator() {
         }}
       />
 
+      {/* Floating gems */}
+      <FloatingIcon x="20%" y={200} delay={0} />
+      <FloatingIcon x="70%" y={400} delay={3} />
+      <FloatingIcon x="50%" y={600} delay={6} />
+
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -134,7 +166,7 @@ export default function JewelleryCalculator() {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="w-full max-w-4xl bg-white/90 backdrop-blur-lg shadow-2xl rounded-3xl p-10 border border-yellow-300 relative"
+          className="w-full max-w-4xl bg-white/90 backdrop-blur-lg shadow-2xl rounded-3xl p-3 md:p-10 border border-yellow-300 relative"
         >
           {/* Header */}
           <motion.div
@@ -155,7 +187,7 @@ export default function JewelleryCalculator() {
                 WebkitBackgroundClip: "text",
                 color: "transparent",
               }}
-              className="text-4xl font-extrabold flex items-center justify-center gap-3"
+              className="text-2xl md:text-4xl font-extrabold flex items-center justify-center gap-3"
             >
               <Calculator size={36} className="text-yellow-600" /> Jewellery
               Price Calculator
@@ -170,7 +202,7 @@ export default function JewelleryCalculator() {
             <select
               value={jewelleryType}
               onChange={(e) => setJewelleryType(e.target.value)}
-              className="rounded-xl p-2 bg-yellow-100 text-black font-medium shadow-sm hover:shadow-lg"
+              className="rounded-xl p-2 bg-yellow-100 text-black font-medium shadow-sm hover:shadow-lg focus:ring-2 focus:ring-yellow-400 transition"
             >
               <option value="Gold">Gold</option>
               <option value="Silver">Silver</option>
@@ -185,7 +217,7 @@ export default function JewelleryCalculator() {
             <select
               value={rateType}
               onChange={(e) => setRateType(e.target.value)}
-              className="rounded-xl p-2 bg-yellow-100 text-black font-medium shadow-sm hover:shadow-lg"
+              className="rounded-xl p-2 bg-yellow-100 text-black font-medium shadow-sm hover:shadow-lg focus:ring-2 focus:ring-yellow-400 transition"
             >
               <option value="10g">10 gram</option>
               <option value="1g">1 gram</option>
@@ -193,18 +225,13 @@ export default function JewelleryCalculator() {
           </div>
 
           {/* Input Section */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid md:grid-cols-2 gap-6"
-          >
+          <div className="grid md:grid-cols-2 gap-6">
             {/* Rate */}
-            <motion.div variants={itemVariants}>
+            <div>
               <label className="block font-semibold text-gray-700 mb-1">
                 Current {jewelleryType} Rate ({rateType})
               </label>
-              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md">
+              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <IndianRupee className="text-yellow-800 mr-2" />
                 <input
                   type="text"
@@ -216,14 +243,14 @@ export default function JewelleryCalculator() {
                   }`}
                 />
               </div>
-            </motion.div>
+            </div>
 
             {/* Weight */}
-            <motion.div variants={itemVariants}>
+            <div>
               <label className="block font-semibold text-gray-700 mb-1">
                 {jewelleryType} Weight (g.mmm)
               </label>
-              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md">
+              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <Gem className="text-yellow-800 mr-2" />
                 <input
                   type="text"
@@ -235,14 +262,14 @@ export default function JewelleryCalculator() {
                   placeholder="e.g. 12.345"
                 />
               </div>
-            </motion.div>
+            </div>
 
             {/* Making Charge */}
-            <motion.div variants={itemVariants}>
+            <div>
               <label className="block font-semibold text-gray-700 mb-1">
                 Making Charge (%)
               </label>
-              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md">
+              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <Percent className="text-yellow-800 mr-2" />
                 <input
                   type="text"
@@ -254,27 +281,25 @@ export default function JewelleryCalculator() {
                   placeholder="e.g. 12"
                 />
               </div>
-            </motion.div>
+            </div>
 
             {/* GST */}
-            <motion.div variants={itemVariants}>
+            <div>
               <label className="block font-semibold text-gray-700 mb-1">
                 GST (%)
               </label>
-              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md">
+              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <Percent className="text-yellow-800 mr-2" />
                 <input
                   type="text"
                   value={gst}
-                  onChange={(e) =>
-                    setGst(e.target.value.replace(/[^0-9.]/g, ""))
-                  }
+                  onChange={(e) => setGst(e.target.value.replace(/[^0-9.]/g, ""))}
                   className="w-full outline-none text-black bg-transparent"
                   placeholder="e.g. 3"
                 />
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
           {/* Buttons */}
           <div className="flex gap-4 mt-10">
@@ -282,9 +307,14 @@ export default function JewelleryCalculator() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={calculate}
-              className="flex-1 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3 rounded-2xl font-bold text-lg"
+              className="flex-1 relative bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3 rounded-2xl font-bold text-lg overflow-hidden"
             >
-              Calculate Final Price
+              <span className="relative z-10">Calculate Final Price</span>
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent"
+                animate={{ x: ["-100%", "100%"] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
             </motion.button>
 
             {result && (
@@ -292,44 +322,54 @@ export default function JewelleryCalculator() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={exportPDF}
-                className="flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-3 rounded-2xl font-semibold"
+                className="flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-3 rounded-2xl font-semibold relative overflow-hidden"
               >
-                <Download size={18} /> Export PDF
+                <span className="relative z-10 flex items-center gap-2">
+                  <Download size={18} /> Export PDF
+                </span>
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent"
+                  animate={{ x: ["-100%", "100%"] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
               </motion.button>
             )}
           </div>
 
           {/* Results */}
-          {result && (
-            <motion.div
-              initial={{ opacity: 0, y: 50, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.7 }}
-              className="mt-10 bg-yellow-50 border border-yellow-200 rounded-2xl p-6 shadow-inner"
-            >
-              <h2 className="text-xl font-bold text-yellow-700 mb-4">
-                Calculation Summary
-              </h2>
-              <ul className="space-y-2 text-gray-700">
-                <li>
-                  Rate of 10g {jewelleryType}: ₹ {formatIndian(result.R10)}
-                </li>
-                <li>
-                  Rate of 1g {jewelleryType}: ₹{" "}
-                  {formatIndian(result.R1.toFixed(2))}
-                </li>
-                <li>
-                  Total {jewelleryType} Cost ({formatWeight(result.W)}): ₹{" "}
-                  {formatIndian(result.TJC.toFixed(2))}
-                </li>
-                <li>Making Charge: ₹ {formatIndian(result.TMC.toFixed(2))}</li>
-                <li>GST: ₹ {formatIndian(result.TGST.toFixed(2))}</li>
-                <li className="font-bold text-green-700 text-lg">
-                  Final Price: ₹ {formatIndian(result.FTJC.toFixed(2))}
-                </li>
-              </ul>
-            </motion.div>
-          )}
+          <AnimatePresence>
+            {result && (
+              <motion.div
+                initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.7 }}
+                className="mt-10 bg-yellow-50 border border-yellow-200 rounded-2xl p-6 shadow-inner"
+              >
+                <h2 className="text-xl font-bold text-yellow-700 mb-4">
+                  Calculation Summary
+                </h2>
+                <ul className="space-y-2 text-gray-700">
+                  <li>
+                    Rate of 10g {jewelleryType}: ₹ {formatIndian(result.R10)}
+                  </li>
+                  <li>
+                    Rate of 1g {jewelleryType}: ₹{" "}
+                    {formatIndian(result.R1.toFixed(2))}
+                  </li>
+                  <li>
+                    Total {jewelleryType} Cost ({formatWeight(result.W)}): ₹{" "}
+                    {formatIndian(result.TJC.toFixed(2))}
+                  </li>
+                  <li>Making Charge: ₹ {formatIndian(result.TMC.toFixed(2))}</li>
+                  <li>GST: ₹ {formatIndian(result.TGST.toFixed(2))}</li>
+                  <li className="font-bold text-green-700 text-lg">
+                    Final Price: ₹ {formatIndian(animatedPrice.toFixed(2))}
+                  </li>
+                </ul>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </motion.div>
     </div>
