@@ -187,7 +187,7 @@ export default function JewelleryCalculator() {
                 WebkitBackgroundClip: "text",
                 color: "transparent",
               }}
-              className="text-2xl md:text-4xl font-extrabold flex items-center justify-center gap-3"
+              className="text-2xl md:text-4xl font-extrabold flex flex-col md:flex-row items-center justify-center gap-3"
             >
               <Calculator size={36} className="text-yellow-600" /> Jewellery
               Price Calculator
