@@ -514,7 +514,7 @@ export default function JewelleryCalculator() {
                 Customer Name
                 <User size={20} className="text-yellow-800 mr-2" />
               </label>
-              <div className="flex-1 sm:flex text-[10px] sm:text-lg items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
+              <div className="flex-1 sm:flex text-[14px] sm:text-lg items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <input
                   type="text"
                   value={customerName}
