@@ -54,7 +54,7 @@ export default function JewelleryCalculator() {
   const [customerName, setCustomerName] = useState("");
   const [customerContact, setCustomerContact] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
-
+  const [numberOfPieces, setNumberOfPieces] = useState("2");
   const [huidNumber, setHuidNumber] = useState("");
   const [jewelleryType, setJewelleryType] = useState("Gold");
   const [rateType, setRateType] = useState("10g"); // "10g" or "1g"
@@ -81,6 +81,8 @@ export default function JewelleryCalculator() {
       TMC = (TJC / 100) * MC;
     } else if (makingChargeType === "/gm") {
       TMC = MC * W;
+    } else if (makingChargeType === "/pc") {
+      TMC = MC * numberOfPieces;
     }
 
     const MCTJR = TJC + TMC;
@@ -269,7 +271,7 @@ export default function JewelleryCalculator() {
     doc.setFontSize(11);
     doc.setTextColor(...textDark);
     doc.text(`Making Charges: `, 50, y + 40);
-    doc.text(`Rs ${(result.MC ?? 0).toFixed(2)}`, 540, y + 40, {
+    doc.text(`Rs ${(result.TMC ?? 0).toFixed(2)}`, 540, y + 40, {
       align: "right",
     });
     doc.text(`HUID Charges: `, 50, y + 60);
@@ -379,7 +381,7 @@ export default function JewelleryCalculator() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8 }}
-        className="min-h-screen flex items-center justify-center p-6"
+        className="min-h-screen flex items-center justify-center p-3 md:p-6"
       >
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -508,11 +510,11 @@ export default function JewelleryCalculator() {
             {/* Customer Details */}
 
             <div>
-              <label className="block font-semibold text-gray-700 mb-1">
+              <label className="font-semibold text-gray-700 mb-1 flex gap-2 items-center">
                 Customer Name
-              </label>
-              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <User size={20} className="text-yellow-800 mr-2" />
+              </label>
+              <div className="flex-1 sm:flex text-[10px] sm:text-lg items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <input
                   type="text"
                   value={customerName}
@@ -524,11 +526,11 @@ export default function JewelleryCalculator() {
             </div>
 
             <div>
-              <label className="block font-semibold text-gray-700 mb-1">
+              <label className="font-semibold text-gray-700 mb-1 flex gap-2 items-center">
                 Customer Contact
-              </label>
-              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <Phone size={20} className="text-yellow-800 mr-2" />
+              </label>
+              <div className="flex-1 sm:flex text-[14px] sm:text-lg items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <input
                   type="text"
                   value={customerContact}
@@ -540,11 +542,11 @@ export default function JewelleryCalculator() {
             </div>
 
             <div>
-              <label className="block font-semibold text-gray-700 mb-1">
+              <label className="font-semibold text-gray-700 mb-1 flex gap-2 items-center">
                 Customer Address
-              </label>
-              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <MapPin size={20} className="text-yellow-800 mr-2" />
+              </label>
+              <div className="flex-1 sm:flex text-[14px] sm:text-lg items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <input
                   type="text"
                   value={customerAddress}
@@ -558,11 +560,11 @@ export default function JewelleryCalculator() {
             {/* Huid Number  */}
 
             <div>
-              <label className="block font-semibold text-gray-700 mb-1">
+              <label className="font-semibold text-gray-700 mb-1 flex gap-2 items-center">
                 HUID Number
-              </label>
-              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <Hash size={20} className="text-yellow-800 mr-2" />
+              </label>
+              <div className="flex-1 sm:flex text-[14px] sm:text-lg items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <input
                   type="text"
                   value={huidNumber}
@@ -575,11 +577,11 @@ export default function JewelleryCalculator() {
 
             {/* Rate */}
             <div>
-              <label className="block font-semibold text-gray-700 mb-1">
+              <label className="font-semibold text-gray-700 mb-1 flex gap-2 items-center">
                 Current {jewelleryType} Rate ({rateType})
+                <IndianRupee size={20} className="text-yellow-800 mr-2" />
               </label>
-              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
-                <IndianRupee className="text-yellow-800 mr-2" />
+              <div className="flex-1 sm:flex text-[14px] sm:text-lg items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition ">
                 <input
                   type="text"
                   value={formatIndian(rate)}
@@ -594,11 +596,11 @@ export default function JewelleryCalculator() {
 
             {/* Weight */}
             <div>
-              <label className="block font-semibold text-gray-700 mb-1">
+              <label className="font-semibold text-gray-700 mb-1 flex gap-2 items-center">
                 {jewelleryType} Weight (g.mmm)
+                <Gem size={20} className="text-yellow-800 mr-2" />
               </label>
-              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
-                <Gem className="text-yellow-800 mr-2" />
+              <div className="flex-1 sm:flex text-[14px] sm:text-lg items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <input
                   type="text"
                   value={weight}
@@ -613,11 +615,17 @@ export default function JewelleryCalculator() {
 
             {/* Making Charge */}
             <div>
-              <label className="block font-semibold text-gray-700 mb-1">
+              <label className="font-semibold text-gray-700 mb-1 flex gap-2 items-center">
                 Making Charge
+                {makingChargeType === "%" ? (
+                  <Percent size={20} className="text-yellow-800 mr-2" />
+                ) : (
+                  <span className="text-yellow-800 font-bold text-[15px] mr-2">
+                    /gm
+                  </span>
+                )}
               </label>
-              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
-                <Percent className="text-yellow-800 mr-2" />
+              <div className="flex-1 sm:flex text-[14px] sm:text-lg items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <select
                   value={makingChargeType}
                   onChange={(e) => setMakingChargeType(e.target.value)}
@@ -625,6 +633,7 @@ export default function JewelleryCalculator() {
                 >
                   <option value="%">%</option>
                   <option value="/gm">/gm</option>
+                  <option value="/pc">/pc</option>
                 </select>
                 <input
                   type="text"
@@ -633,18 +642,46 @@ export default function JewelleryCalculator() {
                     setMakingCharge(e.target.value.replace(/[^0-9.]/g, ""))
                   }
                   className="flex-1 outline-none text-black bg-transparent"
-                  placeholder="e.g. 12"
+                  placeholder={
+                    makingChargeType === "%"
+                      ? "e.g. 12"
+                      : makingChargeType === "/gm"
+                      ? "e.g. 250"
+                      : "e.g. 500 (per piece)"
+                  }
                 />
               </div>
             </div>
 
+            {/* peice input feild if user select piece */}
+            {makingChargeType === "/pc" && (
+              <div>
+                <label className="font-semibold text-gray-700 mb-1 flex gap-2 items-center">
+                  Number of Pieces
+                  <Hash size={20} className="text-yellow-800 mr-2" />
+                </label>
+                <div className="flex-1 sm:flex text-[14px] sm:text-lg items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
+                  <input
+                    type="text"
+                    value={numberOfPieces}
+                    onChange={(e) =>
+                      setNumberOfPieces(e.target.value.replace(/[^0-9]/g, ""))
+                    }
+                    className="w-full outline-none text-black bg-transparent"
+                    placeholder="e.g. 3 (pieces)"
+                  />
+                </div>
+              </div>
+            )}
+            
+
             {/* GST */}
             <div>
-              <label className="block font-semibold text-gray-700 mb-1">
+              <label className="font-semibold text-gray-700 mb-1 flex gap-2 items-center">
                 GST (%)
+                <Percent size={20} className="text-yellow-800 mr-2" />
               </label>
-              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
-                <Percent className="text-yellow-800 mr-2" />
+              <div className="flex-1 sm:flex text-[14px] sm:text-lg items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <input
                   type="text"
                   value={gst}
@@ -659,11 +696,11 @@ export default function JewelleryCalculator() {
 
             {/* HUID Charges */}
             <div>
-              <label className="block font-semibold text-gray-700 mb-1">
+              <label className="font-semibold text-gray-700 mb-1 flex gap-2 items-center">
                 HUID Charges (Rs )
+                <IndianRupee size={20} className="text-yellow-800 mr-2" />
               </label>
-              <div className="flex items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
-                <IndianRupee className="text-yellow-800 mr-2" />
+              <div className="flex-1 sm:flex text-[14px] sm:text-lg items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
                 <input
                   type="text"
                   value={huidCharges}
@@ -678,7 +715,7 @@ export default function JewelleryCalculator() {
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-4 mt-10">
+          <div className="flex flex-col md:flex-row gap-4 mt-10">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.95 }}
