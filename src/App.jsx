@@ -14,12 +14,29 @@ import {
   Hash,
 } from "lucide-react";
 import jsPDF from "jspdf";
-import { toWords } from "number-to-words";
+import { ToWords } from "to-words";
+
+const tooWords = new ToWords({
+  localeCode: "en-IN", // 🇮🇳 Indian numbering format
+  converterOptions: {
+    currency: true,
+    ignoreDecimal: false,
+    ignoreZeroCurrency: false,
+  },
+});
 
 // Utility: Indian number formatting
 const formatIndian = (value) => {
   if (value === null || value === undefined || isNaN(value)) return "";
   return new Intl.NumberFormat("en-IN", {
+    maximumFractionDigits: 2,
+  }).format(value);
+};
+
+const formatIndianNumber = (value) => {
+  if (isNaN(value) || value === null || value === undefined) return "0";
+  return new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
 };
@@ -236,19 +253,23 @@ export default function JewelleryCalculator() {
     doc.text("Weight", 50, y + 60);
     doc.text("Rate/10g", 50, y + 80);
     doc.text("Total", 50, y + 100);
-    doc.text("GST%", 50, y + 120);
+    doc.text("(CGST + SGST)%", 50, y + 120);
 
     // ---------- TABLE DATA ----------
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
     doc.text(`${jewelleryType}`, 540, y + 20, { align: "right" });
     doc.text(`${huidNumber || "N/A"}`, 540, y + 40, { align: "right" });
-    doc.text(`${result.W} g`, 540, y + 60, { align: "right" });
-    doc.text(`Rs ${result.R10}`, 540, y + 80, { align: "right" });
-    doc.text(`Rs ${(result.TJC ?? 0).toFixed(2)}`, 540, y + 100, {
+    doc.text(`${formatIndianNumber(result.W)} g`, 540, y + 60, {
       align: "right",
     });
-    doc.text(`${(result.TGST ?? 0).toFixed(2)}%`, 540, y + 120, {
+    doc.text(`Rs ${formatIndianNumber(result.R10)}`, 540, y + 80, {
+      align: "right",
+    });
+    doc.text(`Rs ${formatIndianNumber(result.TJC ?? 0)}`, 540, y + 100, {
+      align: "right",
+    });
+    doc.text(`${(result.GSTval ?? 0).toFixed(2)}%`, 540, y + 120, {
       align: "right",
     });
 
@@ -271,53 +292,41 @@ export default function JewelleryCalculator() {
     doc.setFontSize(11);
     doc.setTextColor(...textDark);
     doc.text(`Making Charges: `, 50, y + 40);
-    doc.text(`Rs ${(result.TMC ?? 0).toFixed(2)}`, 540, y + 40, {
+    doc.text(`Rs ${formatIndianNumber(result.TMC ?? 0)}`, 540, y + 40, {
       align: "right",
     });
     doc.text(`HUID Charges: `, 50, y + 60);
-    doc.text(`Rs ${(result.HUID ?? 0).toFixed(2)}`, 540, y + 60, {
+    doc.text(`Rs ${formatIndianNumber(result.HUID ?? 0)}`, 540, y + 60, {
       align: "right",
     });
     doc.text(`GST Amount: `, 50, y + 80);
-    doc.text(`Rs ${(result.TGST ?? 0).toFixed(2)}`, 540, y + 80, {
+    doc.text(`Rs ${formatIndianNumber(result.TGST ?? 0)}`, 540, y + 80, {
       align: "right",
     });
 
     // Right box: Totals
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(...textDark);
-    doc.text("Sub Total:", 50, y + 140);
-    doc.text(`Rs ${(result.TJC ?? 0).toFixed(2)}`, 540, y + 140, {
-      align: "right",
-    });
-
-    doc.text("Total GST:", 50, y + 160);
-    doc.text(`Rs ${(result.TGST ?? 0).toFixed(2)}`, 540, y + 160, {
-      align: "right",
-    });
-
     doc.setTextColor(70, 10, 87);
     doc.setFontSize(13);
-    doc.text("Final Price:", 50, y + 190);
-    doc.text(`Rs ${(result.FTJC ?? 0).toFixed(2)}`, 540, y + 190, {
+    doc.text("Final Price:", 50, y + 140);
+    doc.text(`Rs ${formatIndianNumber(result.FTJC ?? 0)}`, 540, y + 140, {
       align: "right",
     });
 
     // ---------- AMOUNT IN WORDS ----------
-    y += 250;
+    y += 170;
     const amountInWords = isFinite(result.FTJC)
-      ? toWords(Math.round(result.FTJC)).toUpperCase()
-      : "ZERO";
+      ? tooWords.convert(result.FTJC).toUpperCase()
+      : "ZERO RUPEES ONLY";
 
     doc.setFont("helvetica", "bolditalic");
     doc.setFontSize(10);
     doc.setTextColor(...textDark);
     doc.text("Amount in Words:", 45, y);
-    doc.text(`${amountInWords} RUPEES ONLY`, 150, y, { maxWidth: 400 });
+    doc.text(`${amountInWords} `, 150, y, { maxWidth: 400 });
 
     // ---------- BANK DETAILS ----------
-    y += 40;
+    y += 80;
     doc.setDrawColor(...borderGold);
     doc.roundedRect(40, y - 10, 270, 70, 6, 6, "S");
     doc.setFont("helvetica", "bold");
@@ -584,7 +593,7 @@ export default function JewelleryCalculator() {
               <div className="flex-1 sm:flex text-[14px] sm:text-lg items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition ">
                 <input
                   type="text"
-                  value={formatIndian(rate)}
+                  value={rate ? formatIndian(rate) : ""}
                   onChange={(e) => setRate(e.target.value.replace(/,/g, ""))}
                   className="w-full outline-none text-black bg-transparent"
                   placeholder={`e.g. ${
@@ -621,7 +630,7 @@ export default function JewelleryCalculator() {
                   <Percent size={20} className="text-yellow-800 mr-2" />
                 ) : (
                   <span className="text-yellow-800 font-bold text-[15px] mr-2">
-                    /gm
+                    {makingChargeType}
                   </span>
                 )}
               </label>
@@ -673,12 +682,11 @@ export default function JewelleryCalculator() {
                 </div>
               </div>
             )}
-            
 
             {/* GST */}
             <div>
               <label className="font-semibold text-gray-700 mb-1 flex gap-2 items-center">
-                GST (%)
+                GST(CGST + SGST)
                 <Percent size={20} className="text-yellow-800 mr-2" />
               </label>
               <div className="flex-1 sm:flex text-[14px] sm:text-lg items-center border rounded-xl p-2 bg-yellow-100 hover:shadow-md focus-within:ring-2 focus-within:ring-yellow-400 transition">
